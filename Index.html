@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Mon assistant</title>
+<style>
+html, body { height: 100%; margin: 0; }
+body { font-family: -apple-system, Helvetica, Arial, sans-serif; font-size: 16px; background: #eef2f4; color: #17252b; }
+#app { position: fixed; top: 0; left: 0; right: 0; bottom: 0; display: -webkit-flex; display: flex; -webkit-flex-direction: column; flex-direction: column; }
+#top { background: #17353f; color: #fff; padding: 8px 10px; padding-top: calc(8px + env(safe-area-inset-top)); display: -webkit-flex; display: flex; -webkit-align-items: center; align-items: center; }
+#top select { -webkit-flex: 1; flex: 1; font-size: 16px; padding: 7px; border-radius: 8px; border: 0; background: #fff; color: #17252b; }
+#top button { margin-left: 8px; font-size: 16px; padding: 7px 12px; border-radius: 8px; border: 1px solid #7fa3ad; background: transparent; color: #fff; }
+#settings { display: none; background: #dde6ea; padding: 10px; }
+#settings label { display: block; font-size: 14px; margin-top: 6px; }
+#settings input { width: 100%; box-sizing: border-box; font-size: 16px; padding: 8px; border: 1px solid #9fb3ba; border-radius: 8px; margin-top: 3px; }
+#settings p { font-size: 13px; margin: 8px 0 0; color: #3d555e; }
+#msgs { -webkit-flex: 1; flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 12px; }
+.m { max-width: 85%; padding: 9px 12px; margin-bottom: 10px; border-radius: 14px; white-space: pre-wrap; word-wrap: break-word; line-height: 1.4; }
+.u { background: #1f6f7f; color: #fff; margin-left: auto; border-bottom-right-radius: 4px; }
+.a { background: #fff; border-bottom-left-radius: 4px; }
+.e { background: #fbe3e0; color: #7a1d12; }
+.h { color: #3d555e; text-align: center; margin-top: 30px; }
+#bar { display: -webkit-flex; display: flex; padding: 8px; padding-bottom: calc(8px + env(safe-area-inset-bottom)); background: #dde6ea; }
+#txt { -webkit-flex: 1; flex: 1; font-size: 16px; padding: 9px; border-radius: 18px; border: 1px solid #9fb3ba; resize: none; height: 40px; font-family: inherit; }
+#send { margin-left: 8px; font-size: 16px; padding: 0 16px; border-radius: 18px; border: 0; background: #1f6f7f; color: #fff; }
+#send[disabled] { background: #8fa9b0; }
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="top">
+    <select id="mode"></select>
+    <button id="gear" type="button">Réglages</button>
+  </div>
+  <div id="settings">
+    <label>Clé API Gemini<input id="key" type="password" placeholder="AIza..." autocapitalize="off" autocorrect="off"></label>
+    <label>Modèle<input id="model" type="text" autocapitalize="off" autocorrect="off"></label>
+    <p>La clé reste enregistrée uniquement sur ce téléphone et n'est envoyée qu'à Google.</p>
+  </div>
+  <div id="msgs"></div>
+  <div id="bar">
+    <textarea id="txt" placeholder="Écris ton message"></textarea>
+    <button id="send" type="button">Envoyer</button>
+  </div>
+</div>
+<script>
+(function () {
+  var MODES = [
+    { id: "chat", name: "Discussion libre", hint: "Pose-moi n'importe quelle question.",
+      system: "Tu es un assistant utile et amical. Réponds en français, de façon claire et concise, sauf si on te parle dans une autre langue." },
+    { id: "trad", name: "Traducteur", hint: "Écris un texte : je le traduis (français ↔ anglais par défaut). Précise une autre langue si besoin.",
+      system: "Tu es un traducteur. Si le texte est en français, traduis-le en anglais ; sinon traduis-le en français, sauf si la personne demande une autre langue. Réponds uniquement avec la traduction, sans commentaire." },
+    { id: "devoirs", name: "Aide aux devoirs", hint: "Donne ton exercice : je t'explique pas à pas pour que tu comprennes.",
+      system: "Tu es un tuteur patient. Explique étape par étape en français, avec des mots simples et un exemple. Aide l'élève à comprendre plutôt que de donner juste la réponse, puis vérifie sa compréhension avec une petite question." },
+    { id: "recettes", name: "Recettes", hint: "Dis-moi ce que tu as dans ton frigo ou ce que tu veux manger.",
+      system: "Tu es un cuisinier qui propose des recettes simples en français. Indique les ingrédients avec les quantités, puis les étapes numérotées et le temps total. Si on te donne des ingrédients, propose des recettes qui les utilisent." }
+  ];
+  var KEY_NAME = "assistant_gemini_key", MODEL_NAME = "assistant_gemini_model";
+  var DEFAULT_MODEL = "gemini-2.5-flash";
+  var current = MODES[0], history = [], busy = false;
+  var $ = function (id) { return document.getElementById(id); };
+
+  function load(k) { try { return localStorage.getItem(k) || ""; } catch (e) { return ""; } }
+  function save(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
+
+  var sel = $("mode"), i;
+  for (i = 0; i < MODES.length; i++) {
+    var o = document.createElement("option");
+    o.value = MODES[i].id; o.textContent = MODES[i].name; sel.appendChild(o);
+  }
+  $("key").value = load(KEY_NAME);
+  $("model").value = load(MODEL_NAME) || DEFAULT_MODEL;
+
+  function add(cls, text) {
+    var d = document.createElement("div");
+    d.className = "m " + cls; d.textContent = text;
+    $("msgs").appendChild(d);
+    $("msgs").scrollTop = $("msgs").scrollHeight;
+    return d;
+  }
+
+  function reset() {
+    history = [];
+    $("msgs").innerHTML = "";
+    var h = document.createElement("div");
+    h.className = "h"; h.textContent = current.hint;
+    $("msgs").appendChild(h);
+  }
+
+  sel.onchange = function () {
+    for (var j = 0; j < MODES.length; j++) { if (MODES[j].id === sel.value) { current = MODES[j]; } }
+    reset();
+  };
+
+  $("gear").onclick = function () {
+    var s = $("settings");
+    s.style.display = (s.style.display === "block") ? "none" : "block";
+  };
+  $("key").onchange = function () { save(KEY_NAME, $("key").value.replace(/\s/g, "")); };
+  $("model").onchange = function () { save(MODEL_NAME, $("model").value.replace(/\s/g, "")); };
+
+  function setBusy(b) { busy = b; $("send").disabled = b; $("send").textContent = b ? "..." : "Envoyer"; }
+
+  function send() {
+    var text = $("txt").value.replace(/^\s+|\s+$/g, "");
+    var key = $("key").value.replace(/\s/g, "");
+    if (busy || !text) { return; }
+    if (!key) { $("settings").style.display = "block"; add("e", "Ajoute d'abord ta clé API dans Réglages."); return; }
+    save(KEY_NAME, key);
+    if ($("msgs").firstChild && $("msgs").firstChild.className === "h") { $("msgs").innerHTML = ""; }
+    add("u", text);
+    history.push({ role: "user", content: text });
+    $("txt").value = "";
+    setBusy(true);
+    var wait = add("a", "…");
+
+    var xhr = new XMLHttpRequest();
+    var model = $("model").value.replace(/\s/g, "") || DEFAULT_MODEL;
+    xhr.open("POST", "https://generativelanguage.googleapis.com/v1beta/models/" + encodeURIComponent(model) + ":generateContent?key=" + encodeURIComponent(key), true);
+    xhr.setRequestHeader("content-type", "application/json");
+    xhr.timeout = 60000;
+    function fail(msg) {
+      history.pop();
+      wait.className = "m e"; wait.textContent = msg;
+      setBusy(false);
+    }
+    xhr.onload = function () {
+      var data;
+      try { data = JSON.parse(xhr.responseText); } catch (e) { return fail("Réponse illisible du serveur."); }
+      var parts = data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts;
+      if (xhr.status !== 200 || !parts) {
+        return fail("Erreur : " + ((data.error && data.error.message) || (data.promptFeedback ? "message bloqué par le filtre de sécurité" : "code " + xhr.status)));
+      }
+      var out = "", k;
+      for (k = 0; k < parts.length; k++) { if (parts[k].text) { out += parts[k].text; } }
+      history.push({ role: "assistant", content: out });
+      wait.textContent = out;
+      $("msgs").scrollTop = $("msgs").scrollHeight;
+      setBusy(false);
+    };
+    xhr.onerror = function () { fail("Connexion impossible. Vérifie ton réseau."); };
+    xhr.ontimeout = function () { fail("Le serveur met trop de temps à répondre."); };
+    var contents = [], n;
+    for (n = 0; n < history.length; n++) {
+      contents.push({ role: history[n].role === "assistant" ? "model" : "user", parts: [{ text: history[n].content }] });
+    }
+    xhr.send(JSON.stringify({
+      systemInstruction: { parts: [{ text: current.system }] },
+      contents: contents,
+      generationConfig: { maxOutputTokens: 2000 }
+    }));
+  }
+
+  $("send").onclick = send;
+  reset();
+})();
+</script>
+</body>
+</html>
