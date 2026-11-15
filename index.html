@@ -54,51 +54,6 @@ form{display:-webkit-flex;display:flex;padding:8px;padding-bottom:calc(8px + env
   <textarea id="sys"></textarea>
   <button id="save">Enregistrer</button>
   <small>La clé reste uniquement sur cet appareil (stockage local). Crée-en une gratuitement sur aistudio.google.com.</small>
-</div></div>
-
-<script>
-(function () {
-  var $ = function (id) { return document.getElementById(id); };
-  var chat = $('chat'), q = $('q'), send = $('send');
-  var history = [];
-  var D = { key: '', model: 'gemini-2.5-flash', sys: 'Tu es un assistant utile. Réponds en français, de façon claire et concise.' };
-
-  function load(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
-  function store(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
-
-  var cfg = {
-    key: load('g_key') || D.key,
-    model: load('g_model') || D.model,
-    sys: load('g_sys') || D.sys
-  };
-  try { history = JSON.parse(load('g_hist') || '[]'); } catch (e) { history = []; }
-
-  function add(text, cls) {
-    var d = document.createElement('div');
-    d.className = 'msg ' + cls;
-    d.textContent = text;
-    chat.appendChild(d);
-    chat.scrollTop = chat.scrollHeight;
-    return d;
-  }
-
-  function render() {
-    chat.innerHTML = '';
-    if (!history.length) add('Bonjour ! Pose-moi une question.', 'bot');
-    for (var i = 0; i < history.length; i++) {
-      add(history[i].parts[0].text, history[i].role === 'user' ? 'user' : 'bot');
-    }
-  }
-
-  function openCfg() {
-    $('key').value = cfg.key; $('model').value = cfg.model; $('sys').value = cfg.sys;
-    $('cfg').className = 'on';
-  }
-
-  $('set').onclick = openCfg;
-  $('save').onclick = function () {
-    cfg.key = $('key').value.replace(/\s/g, '');
-    cfg.model = $('model').value.replace(/\s/g, '') || D.model;
     cfg.sys = $('sys').value || D.sys;
     store('g_key', cfg.key); store('g_model', cfg.model); store('g_sys', cfg.sys);
     $('cfg').className = '';
@@ -160,4 +115,5 @@ form{display:-webkit-flex;display:flex;padding:8px;padding-bottom:calc(8px + env
 })();
 </script>
 </body>
-</html>
+        </html>
+          
