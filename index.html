@@ -4,274 +4,160 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Assistant">
-<meta name="theme-color" content="#ffffff">
-<title>Assistant Gemini</title>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Mon IA">
+<title>Mon IA</title>
 <style>
-* { -webkit-tap-highlight-color: transparent; box-sizing: border-box; }
-html, body { height: 100%; margin: 0; -webkit-text-size-adjust: 100%; }
-body { font-family: -apple-system, "Helvetica Neue", Helvetica, Arial, sans-serif; font-size: 16px; background: #fff; color: #1f1f1f; }
-button, select, input, textarea { font-family: inherit; }
-#app { position: fixed; top: 0; left: 0; right: 0; bottom: 0; display: -webkit-flex; display: flex; -webkit-flex-direction: column; flex-direction: column; }
-
-#top { display: -webkit-flex; display: flex; -webkit-align-items: center; align-items: center; padding: 8px 8px 6px; padding-top: calc(8px + env(safe-area-inset-top)); background: #fff; }
-.ib { width: 40px; height: 40px; font-size: 20px; border: 0; border-radius: 20px; background: transparent; color: #444; padding: 0; }
-#title { -webkit-flex: 1; flex: 1; min-width: 0; font-size: 18px; font-weight: 600; margin: 0 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.sp { color: #4285f4; background: -webkit-linear-gradient(left, #4285f4, #d96570); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-#model { max-width: 118px; font-size: 14px; padding: 7px 8px; border-radius: 16px; border: 1px solid #d3dbe5; background: #f0f4f9; color: #1f1f1f; -webkit-appearance: none; margin-right: 2px; }
-
-#msgs { -webkit-flex: 1; flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 8px 14px 6px; }
-.row { margin-bottom: 16px; }
-.row.u { text-align: right; }
-.u .m { display: inline-block; text-align: left; max-width: 86%; background: #e9eef6; padding: 10px 14px; border-radius: 20px 20px 6px 20px; white-space: pre-wrap; word-wrap: break-word; line-height: 1.42; }
-.a .m { line-height: 1.5; word-wrap: break-word; }
-.t { white-space: pre-wrap; }
-.a .m pre { white-space: pre-wrap; word-wrap: break-word; background: #f0f4f9; padding: 10px 12px; border-radius: 12px; font-family: Menlo, Courier, monospace; font-size: 13px; margin: 8px 0; overflow-x: auto; line-height: 1.4; }
-.a .m pre.out { background: #e6f4ea; }
-.a .m pre.bad { background: #fde8e6; }
-.m code { background: #eef2f7; padding: 1px 5px; border-radius: 5px; font-family: Menlo, Courier, monospace; font-size: 14px; }
-.m img { max-width: 100%; border-radius: 14px; display: block; margin: 8px 0; }
-.u .m img { max-width: 130px; display: inline-block; margin: 0 6px 6px 0; }
-.ph { display: inline-block; font-size: 13px; color: #666; background: #f0f4f9; padding: 4px 10px; border-radius: 10px; margin: 4px 0; }
-.src { font-size: 13px; margin-top: 8px; color: #555; }
-.src a { display: inline-block; color: #1a5fb4; background: #eef3fb; padding: 3px 9px; border-radius: 12px; margin: 3px 4px 0 0; text-decoration: none; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; vertical-align: top; }
-.err { color: #a3281b; background: #fde8e6; padding: 10px 14px; border-radius: 14px; }
-.acts { margin-top: 4px; }
-.act { font-size: 13px; padding: 5px 11px; margin: 2px 6px 0 0; border-radius: 14px; border: 1px solid #d3dbe5; background: #fff; color: #444; }
-.dots span { display: inline-block; width: 8px; height: 8px; margin: 0 2px; border-radius: 50%; background: #8ab4f8; -webkit-animation: bl 1.2s infinite ease-in-out; animation: bl 1.2s infinite ease-in-out; }
-.dots span:nth-child(2) { -webkit-animation-delay: .2s; animation-delay: .2s; }
-.dots span:nth-child(3) { -webkit-animation-delay: .4s; animation-delay: .4s; }
-@-webkit-keyframes bl { 0%, 80%, 100% { opacity: .25; } 40% { opacity: 1; } }
-@keyframes bl { 0%, 80%, 100% { opacity: .25; } 40% { opacity: 1; } }
-
-.empty { padding: 28px 4px 6px; }
-.empty .hi { font-size: 32px; font-weight: 700; line-height: 1.15; margin-bottom: 4px; background: #4285f4; background: -webkit-linear-gradient(left, #4285f4, #9b72cb 55%, #d96570); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-.empty .q { font-size: 26px; font-weight: 600; color: #b4b9c1; margin-bottom: 8px; }
-.empty .hh { font-size: 14px; color: #666; margin-bottom: 16px; line-height: 1.4; }
-.chip { display: block; width: 100%; text-align: left; font-size: 15px; padding: 12px 14px; margin-bottom: 8px; border-radius: 16px; border: 0; background: #f0f4f9; color: #1f1f1f; }
-
-#dock { padding: 6px 10px; padding-bottom: calc(8px + env(safe-area-inset-bottom)); background: #fff; }
-#status { display: none; font-size: 13px; color: #555; padding: 0 6px 6px; }
-#thumbs { white-space: nowrap; overflow-x: auto; }
-.th { position: relative; display: inline-block; margin: 0 8px 6px 0; }
-.th img { width: 56px; height: 56px; object-fit: cover; border-radius: 10px; display: block; }
-.th b { position: absolute; top: -6px; right: -6px; width: 20px; height: 20px; line-height: 20px; text-align: center; font-size: 12px; background: #444; color: #fff; border-radius: 10px; }
-#box { background: #f0f4f9; border-radius: 26px; padding: 8px 10px 6px 14px; }
-#txt { width: 100%; border: 0; background: transparent; font-size: 16px; resize: none; height: 24px; max-height: 120px; line-height: 24px; padding: 0; outline: none; -webkit-appearance: none; }
-#tools { display: -webkit-flex; display: flex; -webkit-align-items: center; align-items: center; margin-top: 6px; }
-.tl { font-size: 17px; padding: 5px 12px; margin-right: 6px; border-radius: 16px; border: 1px solid #cfd8e3; background: transparent; color: #444; }
-.tl.rec { background: #d93025; border-color: #d93025; color: #fff; }
-.tl.on { background: #d3e3fd; border-color: #d3e3fd; color: #0b3d91; font-weight: 600; }
-#send { margin-left: auto; width: 40px; height: 36px; font-size: 17px; border: 0; border-radius: 18px; background: #1a73e8; color: #fff; padding: 0; }
-#send.stop { background: #444; }
-
-#shade { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,.4); z-index: 20; }
-#drawer { position: fixed; top: 0; bottom: 0; left: 0; width: 82%; max-width: 330px; background: #fff; z-index: 30; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 14px 12px; padding-top: calc(14px + env(safe-area-inset-top)); -webkit-transform: translateX(-105%); transform: translateX(-105%); -webkit-transition: -webkit-transform .22s; transition: transform .22s; }
-#drawer.open { -webkit-transform: none; transform: none; }
-.dh { font-size: 12px; font-weight: 700; color: #777; text-transform: uppercase; margin: 16px 6px 6px; letter-spacing: .5px; }
-.di { display: -webkit-flex; display: flex; -webkit-align-items: center; align-items: center; width: 100%; text-align: left; font-size: 15px; padding: 10px; border: 0; border-radius: 14px; background: transparent; color: #1f1f1f; }
-.di.on { background: #e9eef6; }
-.di span.l { -webkit-flex: 1; flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.di i { font-style: normal; color: #888; padding: 0 6px; }
-.newb { width: 100%; font-size: 15px; font-weight: 600; padding: 12px; border: 0; border-radius: 22px; background: #d3e3fd; color: #0b3d91; }
-
-#sheet { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: #fff; z-index: 40; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 14px; padding-top: calc(14px + env(safe-area-inset-top)); }
-#sheet h2 { font-size: 20px; margin: 0 0 6px; }
-#sheet label { display: block; font-size: 13px; font-weight: 600; margin-top: 14px; color: #444; }
-#sheet input[type=text], #sheet input[type=password], #sheet select { width: 100%; font-size: 16px; padding: 10px; border: 1px solid #cfd8e3; border-radius: 12px; margin-top: 4px; background: #f8fafd; -webkit-appearance: none; }
-#sheet input[type=range] { width: 100%; margin-top: 6px; }
-#sheet p { font-size: 13px; color: #666; line-height: 1.4; margin: 6px 0 0; }
-.btn { display: block; width: 100%; font-size: 15px; padding: 12px; margin-top: 12px; border-radius: 22px; border: 1px solid #cfd8e3; background: #fff; color: #1f1f1f; }
-.btn.pri { background: #1a73e8; border-color: #1a73e8; color: #fff; font-weight: 600; }
-.btn.red { color: #a3281b; }
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;margin:0}
+body{font-family:-apple-system,Helvetica,Arial,sans-serif;background:#f2f2f7;color:#1c1c1e;display:-webkit-flex;display:flex;-webkit-flex-direction:column;flex-direction:column}
+header{background:#1c1c1e;color:#fff;padding:12px 14px;padding-top:calc(12px + env(safe-area-inset-top));display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;-webkit-justify-content:space-between;justify-content:space-between}
+header h1{font-size:17px;margin:0}
+header button{background:none;border:0;color:#0a84ff;font-size:15px;margin-left:14px}
+#chat{-webkit-flex:1;flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:12px}
+.msg{max-width:85%;padding:9px 13px;border-radius:18px;margin-bottom:10px;line-height:1.4;font-size:16px;white-space:pre-wrap;word-wrap:break-word}
+.user{background:#0a84ff;color:#fff;margin-left:auto;border-bottom-right-radius:4px}
+.bot{background:#fff;border-bottom-left-radius:4px}
+.err{background:#ffe5e5;color:#b00020}
+form{display:-webkit-flex;display:flex;padding:8px;padding-bottom:calc(8px + env(safe-area-inset-bottom));background:#fff;border-top:1px solid #d1d1d6}
+#q{-webkit-flex:1;flex:1;font-size:16px;border:1px solid #c7c7cc;border-radius:18px;padding:9px 14px;-webkit-appearance:none;outline:0;margin-right:8px}
+#send{background:#0a84ff;color:#fff;border:0;border-radius:18px;padding:0 18px;font-size:16px}
+#send:disabled{opacity:.5}
+#cfg{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);z-index:9;padding:20px;-webkit-align-items:center;align-items:center;-webkit-justify-content:center;justify-content:center}
+#cfg.on{display:-webkit-flex;display:flex}
+#box{background:#fff;border-radius:14px;padding:16px;width:100%;max-width:420px}
+#box label{display:block;font-size:13px;color:#555;margin:10px 0 4px}
+#box input,#box textarea{width:100%;font-size:16px;border:1px solid #c7c7cc;border-radius:8px;padding:8px;font-family:inherit}
+#box textarea{height:70px}
+#box button{margin-top:14px;width:100%;background:#0a84ff;color:#fff;border:0;border-radius:10px;padding:11px;font-size:16px}
+#box small{display:block;margin-top:8px;color:#777;font-size:12px}
 </style>
 </head>
 <body>
-<div id="app">
-  <div id="top">
-    <button class="ib" id="menu" type="button">☰</button>
-    <div id="title"><span class="sp">✦</span> <span id="gname">Assistant</span></div>
-    <select id="model"></select>
-    <button class="ib" id="gear" type="button">⚙</button>
-  </div>
-  <div id="msgs"></div>
-  <div id="dock">
-    <div id="status"></div>
-    <div id="thumbs"></div>
-    <div id="box">
-      <textarea id="txt" rows="1" placeholder="Écris ou dicte ton message"></textarea>
-      <div id="tools">
-        <button class="tl" id="att" type="button" title="Photo">📷</button>
-        <button class="tl" id="mic" type="button" title="Parler">🎤</button>
-        <button class="tl" data-tool="search" type="button" title="Recherche web">🔎</button>
-        <button class="tl" data-tool="code" type="button" title="Code">🧮</button>
-        <button class="tl" data-tool="image" type="button" title="Créer une image">🎨</button>
-        <button id="send" type="button">➤</button>
-      </div>
-    </div>
-  </div>
-</div>
+<header>
+  <h1>Mon IA</h1>
+  <div><button id="clr">Effacer</button><button id="set">Réglages</button></div>
+</header>
+<div id="chat"></div>
+<form id="f">
+  <input id="q" type="text" placeholder="Écris ton message…" autocomplete="off">
+  <button id="send" type="submit">Envoyer</button>
+</form>
 
-<div id="shade"></div>
-<div id="drawer"></div>
-
-<div id="sheet">
-  <h2>Réglages</h2>
-  <label>Clé API Gemini<input id="key" type="password" placeholder="AIza..." autocapitalize="off" autocorrect="off"></label>
-  <p>Gratuite sur aistudio.google.com. Elle reste sur ce téléphone et n'est envoyée qu'à Google.</p>
-  <label>Température : <span id="tval">1.0</span></label>
-  <input id="temp" type="range" min="0" max="2" step="0.1" value="1">
-  <p>Bas = réponses précises, haut = plus créatives.</p>
-  <label>Réflexion (modèles 2.5 uniquement)<select id="think"><option value="fast">Rapide (réponses plus vite)</option><option value="auto">Automatique (plus approfondie)</option></select></label>
-  <label>Voix<select id="voice"><option value="Kore">Kore</option><option value="Puck">Puck</option><option value="Charon">Charon</option><option value="Aoede">Aoede</option><option value="Zephyr">Zephyr</option><option value="Fenrir">Fenrir</option></select></label>
-  <label>Lecture à voix haute<select id="vmode"><option value="gem">Naturelle (voix Gemini)</option><option value="sys">Simple (voix de l'iPhone)</option></select></label>
-  <label>Lire chaque réponse automatiquement<select id="autoread"><option value="0">Non (sauf si je parle avec 🎤)</option><option value="1">Oui</option></select></label>
-  <button class="btn" id="testvoice" type="button">🔊 Tester la voix</button>
-  <label>Langue de la voix simple<select id="lang"><option value="fr-FR">Français</option><option value="en-US">English</option><option value="es-ES">Español</option><option value="de-DE">Deutsch</option><option value="it-IT">Italiano</option></select></label>
-  <label>Modèle personnalisé (facultatif)<input id="cmodel" type="text" placeholder="ex. gemini-4-argon" autocapitalize="off" autocorrect="off"></label>
-  <label>Modèle de génération d'images<input id="imodel" type="text" autocapitalize="off" autocorrect="off"></label>
-  <label>Modèle de voix<input id="tmodel" type="text" autocapitalize="off" autocorrect="off"></label>
-  <button class="btn" id="copyconv" type="button">📋 Copier la conversation</button>
-  <button class="btn red" id="wipe" type="button">Effacer toutes mes données</button>
-  <button class="btn pri" id="closeset" type="button">Terminé</button>
-</div>
-<input type="file" id="file" accept="image/*" style="display:none">
+<div id="cfg"><div id="box">
+  <strong>Réglages Gemini</strong>
+  <label>Clé API Gemini</label>
+  <input id="key" type="password" placeholder="AIza…" autocomplete="off">
+  <label>Modèle</label>
+  <input id="model" type="text">
+  <label>Consigne système (personnalité de l’IA)</label>
+  <textarea id="sys"></textarea>
+  <button id="save">Enregistrer</button>
+  <small>La clé reste uniquement sur cet appareil (stockage local). Crée-en une gratuitement sur aistudio.google.com.</small>
+</div></div>
 
 <script>
 (function () {
-  var BUILTIN = [
-    { id: "general", icon: "💬", name: "Assistant", hint: "Pose-moi n'importe quelle question, envoie une photo ou active la recherche web.",
-      sugg: ["Explique-moi comment fonctionne internet", "Quelles sont les actualités du jour ? (active 🔎 Web)", "Aide-moi à écrire un message pour refuser poliment une invitation"],
-      system: "Tu es un assistant utile et amical. Réponds en français, de façon claire et concise, sauf si on te parle dans une autre langue." },
-    { id: "trad", icon: "🌍", name: "Traducteur", hint: "Écris ou photographie un texte : je le traduis (français ↔ anglais par défaut).",
-      sugg: ["Où est la gare, s'il vous plaît ?", "Could you tell me how to get to the airport?", "Traduis en espagnol : bonne journée"],
-      system: "Tu es un traducteur. Si le texte est en français, traduis-le en anglais ; sinon traduis-le en français, sauf si la personne demande une autre langue. Réponds uniquement avec la traduction, sans commentaire." },
-    { id: "devoirs", icon: "📚", name: "Aide aux devoirs", hint: "Donne ton exercice (ou prends-le en photo) : je t'explique pas à pas.",
-      sugg: ["Explique-moi les fractions simplement", "Comment accorder le participe passé ?", "Aide-moi à résoudre 2x + 5 = 17"],
-      system: "Tu es un tuteur patient. Explique étape par étape en français, avec des mots simples et un exemple. Aide l'élève à comprendre plutôt que de donner juste la réponse, puis vérifie sa compréhension avec une petite question." },
-    { id: "recettes", icon: "🍳", name: "Recettes", hint: "Dis-moi ce que tu as dans ton frigo (ou prends-le en photo).",
-      sugg: ["J'ai des œufs, des pâtes et du fromage", "Un dessert rapide sans four", "Un dîner végétarien pour 4 personnes"],
-      system: "Tu es un cuisinier qui propose des recettes simples en français. Indique les ingrédients avec les quantités, puis les étapes numérotées et le temps total. Si on te donne des ingrédients, propose des recettes qui les utilisent." },
-    { id: "code", icon: "👨‍💻", name: "Programmeur", hint: "Aide pour écrire, comprendre ou corriger du code.",
-      sugg: ["Explique ce qu'est une boucle for", "Écris une fonction Python qui trie une liste", "Pourquoi mon code affiche undefined ?"],
-      system: "Tu es un développeur expérimenté. Réponds en français, avec des explications courtes et des exemples de code dans des blocs de code." }
-  ];
-  var MODELS = [
-    { v: "gemini-3.5-flash", n: "3.5 Flash" },
-    { v: "gemini-3.7-flash", n: "3.7 Flash" },
-    { v: "gemini-3.5-flash-lite", n: "Flash-Lite" },
-    { v: "gemini-4-argon", n: "Gemini 4" }
-  ];
-  var API = "https://generativelanguage.googleapis.com/v1beta/models/";
-  var SEND_MAX = 16, KEEP_CONV = 30, KEEP_MSG = 40, MAX_IMGS = 4, HAS_TTS = !!(window.speechSynthesis && window.SpeechSynthesisUtterance);
   var $ = function (id) { return document.getElementById(id); };
+  var chat = $('chat'), q = $('q'), send = $('send');
+  var history = [];
+  var D = { key: '', model: 'gemini-2.5-flash', sys: 'Tu es un assistant utile. Réponds en français, de façon claire et concise.' };
 
-  function lget(k, d) { try { var r = localStorage.getItem(k); return r === null ? d : r; } catch (e) { return d; } }
-  function lset(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
-  function jget(k, d) { try { var r = localStorage.getItem(k); return r ? JSON.parse(r) : d; } catch (e) { return d; } }
-  if (lget("gm_ver", "") !== "3") {
-    lset("gm_model", "gemini-3.5-flash"); lset("gm_cmodel", "");
-    lset("gm_imodel", "gemini-3.1-flash-image"); lset("gm_tmodel", "gemini-3.1-flash-tts-preview");
-    lset("gm_ver", "3");
+  function load(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
+  function store(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
+
+  var cfg = {
+    key: load('g_key') || D.key,
+    model: load('g_model') || D.model,
+    sys: load('g_sys') || D.sys
+  };
+  try { history = JSON.parse(load('g_hist') || '[]'); } catch (e) { history = []; }
+
+  function add(text, cls) {
+    var d = document.createElement('div');
+    d.className = 'msg ' + cls;
+    d.textContent = text;
+    chat.appendChild(d);
+    chat.scrollTop = chat.scrollHeight;
+    return d;
   }
 
-  var S = { convs: jget("gm_convs", []), gems: jget("gm_gems", []), cur: null, tool: "", imgs: [], busy: false, xhr: null, speakBtn: null, viaMic: false };
-
-  function esc(s) { return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;"); }
-  function inl(t) {
-    t = esc(t.replace(/^\n+|\n+$/g, ""));
-    t = t.replace(/\*\*([^*\n]+)\*\*/g, "<b>$1</b>");
-    t = t.replace(/`([^`\n]+)`/g, "<code>$1</code>");
-    t = t.replace(/^#+ (.*)$/gm, "<b>$1</b>");
-    t = t.replace(/^[\*\-] /gm, "• ");
-    return t;
-  }
-  function fmt(t) {
-    var p = t.split("```"), o = [], i, s, nl;
-    for (i = 0; i < p.length; i++) {
-      if (i % 2 === 1) {
-        s = p[i]; nl = s.indexOf("\n");
-        if (nl > -1 && nl < 20 && /^[a-zA-Z0-9+#_\-]*$/.test(s.slice(0, nl))) { s = s.slice(nl + 1); }
-        o.push("<pre>" + esc(s.replace(/\n$/, "")) + "</pre>");
-      } else { o.push(inl(p[i])); }
+  function render() {
+    chat.innerHTML = '';
+    if (!history.length) add('Bonjour ! Pose-moi une question.', 'bot');
+    for (var i = 0; i < history.length; i++) {
+      add(history[i].parts[0].text, history[i].role === 'user' ? 'user' : 'bot');
     }
-    return o.join("");
   }
-  function plain(t) { return t.replace(/[*`#]/g, "").replace(/^[\-•] /gm, ""); }
 
-  function allGems() { return BUILTIN.concat(S.gems); }
-  function gemOf(id) { var g = allGems(), i; for (i = 0; i < g.length; i++) { if (g[i].id === id) { return g[i]; } } return BUILTIN[0]; }
-  function curGem() { return gemOf(S.cur.gemId); }
+  function openCfg() {
+    $('key').value = cfg.key; $('model').value = cfg.model; $('sys').value = cfg.sys;
+    $('cfg').className = 'on';
+  }
 
-  function itemsText(items) {
-    var o = "", i;
-    for (i = 0; items && i < items.length; i++) { if (items[i].t === "text") { o += items[i].v; } }
-    return o;
-  }
-  function stripItems(items) {
-    var o = [], i;
-    for (i = 0; items && i < items.length; i++) { o.push(items[i].t === "img" ? { t: "imgph" } : items[i]); }
-    return o;
-  }
-  function saveConvs() {
-    var out = [], i, j, c, m, ms;
-    for (i = 0; i < S.convs.length && i < KEEP_CONV; i++) {
-      c = S.convs[i]; ms = [];
-      for (j = Math.max(0, c.msgs.length - KEEP_MSG); j < c.msgs.length; j++) {
-        m = c.msgs[j];
-        ms.push(m.role === "user" ? { role: "user", text: m.text, n: m.n } : { role: "model", items: stripItems(m.items) });
+  $('set').onclick = openCfg;
+  $('save').onclick = function () {
+    cfg.key = $('key').value.replace(/\s/g, '');
+    cfg.model = $('model').value.replace(/\s/g, '') || D.model;
+    cfg.sys = $('sys').value || D.sys;
+    store('g_key', cfg.key); store('g_model', cfg.model); store('g_sys', cfg.sys);
+    $('cfg').className = '';
+  };
+  $('clr').onclick = function () { history = []; store('g_hist', '[]'); render(); };
+
+  $('f').onsubmit = function (e) {
+    e.preventDefault();
+    var text = q.value.replace(/^\s+|\s+$/g, '');
+    if (!text) return;
+    if (!cfg.key) { openCfg(); return; }
+    q.value = '';
+    history.push({ role: 'user', parts: [{ text: text }] });
+    add(text, 'user');
+    var wait = add('…', 'bot');
+    send.disabled = true;
+
+    var url = 'https://generativelanguage.googleapis.com/v1beta/models/' +
+      encodeURIComponent(cfg.model) + ':generateContent?key=' + encodeURIComponent(cfg.key);
+    var xhr = new XMLHttpRequest();
+    xhr.open('POST', url, true);
+    xhr.setRequestHeader('Content-Type', 'application/json');
+    xhr.timeout = 60000;
+
+    function fail(msg) {
+      history.pop();
+      wait.className = 'msg err';
+      wait.textContent = msg;
+      send.disabled = false;
+    }
+    xhr.onerror = function () { fail('Erreur réseau. Vérifie ta connexion.'); };
+    xhr.ontimeout = function () { fail('Délai dépassé. Réessaie.'); };
+    xhr.onload = function () {
+      var data;
+      try { data = JSON.parse(xhr.responseText); } catch (err) { return fail('Réponse illisible.'); }
+      if (xhr.status !== 200) {
+        return fail('Erreur ' + xhr.status + ' : ' + (data && data.error && data.error.message ? data.error.message : 'inconnue'));
       }
-      out.push({ id: c.id, title: c.title, gemId: c.gemId, msgs: ms });
-    }
-    lset("gm_convs", JSON.stringify(out));
-  }
-  function inList(c) { var i; for (i = 0; i < S.convs.length; i++) { if (S.convs[i] === c) { return true; } } return false; }
-  function persist() {
-    if (S.cur.msgs.length && !inList(S.cur)) { S.convs.unshift(S.cur); }
-    if (S.convs.length > KEEP_CONV) { S.convs.length = KEEP_CONV; }
-    saveConvs();
-  }
+      var out = '';
+      try {
+        var parts = data.candidates[0].content.parts;
+        for (var i = 0; i < parts.length; i++) out += parts[i].text || '';
+      } catch (err) {}
+      if (!out) return fail('Aucune réponse (contenu bloqué ?).');
+      history.push({ role: 'model', parts: [{ text: out }] });
+      store('g_hist', JSON.stringify(history.slice(-40)));
+      wait.textContent = out;
+      chat.scrollTop = chat.scrollHeight;
+      send.disabled = false;
+    };
+    xhr.send(JSON.stringify({
+      systemInstruction: { parts: [{ text: cfg.sys }] },
+      contents: history.slice(-40)
+    }));
+  };
 
-  /* ---------- rendu ---------- */
-  function renderItems(el, items) {
-    var h = [], i, it, k;
-    for (i = 0; i < items.length; i++) {
-      it = items[i];
-      if (it.t === "text") { h.push('<div class="t">' + fmt(it.v) + "</div>"); }
-      else if (it.t === "code") { h.push("<pre>" + esc(it.v) + "</pre>"); }
-      else if (it.t === "out") { h.push('<pre class="' + (it.ok ? "out" : "bad") + '">' + esc(it.v) + "</pre>"); }
-      else if (it.t === "img") { h.push('<img alt="image générée" src="data:' + esc(it.mime) + ";base64," + it.data + '"><div class="ph">Maintiens l\'image appuyée pour l\'enregistrer</div>'); }
-      else if (it.t === "imgph") { h.push('<span class="ph">🖼 image générée (non conservée)</span>'); }
-      else if (it.t === "src") {
-        h.push('<div class="src">Sources :<br>');
-        for (k = 0; k < it.list.length; k++) { h.push('<a href="' + esc(it.list[k].u) + '" target="_blank" rel="noopener">' + esc(it.list[k].n) + "</a>"); }
-        h.push("</div>");
-      }
-    }
-    el.innerHTML = h.join("");
-  }
-  function nearBottom() { var m = $("msgs"); return m.scrollHeight - m.scrollTop - m.clientHeight < 120; }
-  function scrollDown() { var m = $("msgs"); m.scrollTop = m.scrollHeight; }
-
-  /* ---------- voix : lecture naturelle (Gemini) + micro ---------- */
-  var AC = window.AudioContext || window.webkitAudioContext, actx = null, playing = null, playToken = 0, rec = null;
-  function unlockAudio() {
-    if (!AC) { return; }
-    if (!actx) { try { actx = new AC(); } catch (e) { return; } }
-    if (actx.state === "suspended" && actx.resume) { actx.resume(); }
-    try {
-      var b = actx.createBuffer(1, 1, 22050), s = actx.createBufferSource();
-      s.buffer = b; s.connect(actx.destination);
-      if (s.start) { s.start(0); } else { s.noteOn(0); }
-    } catch (e2) {}
-  }
-  function setStatus(m) { var el = $("status"); el.textContent = m || ""; el.style.display = m ? "block" : "none"; }
-  function speechText(t) { return plain(t.replace(/```[\s\S]*?```/g, " ")); }
-  function endSpeak() {
-    playing = null;
-    if (S.speakBtn) { S.speakBtn.textContent = "🔊 Écouter"; S.speakBtn = null; }
-  }
-  function stopSpeak() {
-    playToken++;
-    if (playing) { try { if (playing.stop) { playing.stop(0); } else { playing.noteOff(0); } } catch (e) {} }
-    if (HA
+  render();
+  if (!cfg.key) openCfg();
+})();
+</script>
+</body>
+</html>
